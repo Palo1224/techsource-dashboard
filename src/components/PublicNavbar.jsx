@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 
 export default function PublicNavbar({ session, admin, clienteSession, onClienteLogout }) {
@@ -16,12 +16,15 @@ export default function PublicNavbar({ session, admin, clienteSession, onCliente
       })
   }, [])
 
+  const navigate = useNavigate()
+
   async function handleLogout() {
     if (clienteSession) {
       onClienteLogout()
     } else {
       await supabase.auth.signOut()
     }
+    navigate('/catalogo', { replace: true })
   }
 
   const estaLogueado = !!clienteSession || !!session

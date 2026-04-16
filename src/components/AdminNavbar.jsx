@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 
 const links = [
@@ -25,8 +25,11 @@ export default function AdminNavbar() {
       })
   }, [])
 
+  const navigate = useNavigate()
+
   async function handleLogout() {
     await supabase.auth.signOut()
+    navigate('/catalogo', { replace: true })
   }
 
   const syncText = ultimaSync
