@@ -18,15 +18,15 @@ export default function Login({ onClienteLogin }) {
     setError('')
     setLoading(true)
 
-    const { data } = await supabase
+    const { data, error: queryError } = await supabase
       .from('clientes')
-      .select('id, nombre_completo, email, permitido')
+      .select('*')
       .ilike('email', email)
       .maybeSingle()
 
     setLoading(false)
 
-    if (data) {
+    if (!queryError && data) {
       if (data.permitido === false) {
         setError('Tu cuenta no tiene acceso habilitado. Contactá al administrador.')
         return
