@@ -66,24 +66,14 @@ export default function MisCotizaciones({ clienteSession }) {
     },
     { key: 'acciones', label: '', render: (r) => (
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-        <button className="btn-icon" title="Ver" onClick={() => setDetalle(r)}>👁</button>
-        <button className="btn-icon" title="PDF" onClick={() => generateCotizacionPdf(r)}>⬇</button>
         {r.estado === 'emitida' && (
           <>
-            <button
-              className="btn-aceptar"
-              onClick={() => cambiarEstado(r.id, 'aprobada')}
-            >
-              Aceptar
-            </button>
-            <button
-              className="btn-rechazar"
-              onClick={() => cambiarEstado(r.id, 'rechazada')}
-            >
-              Rechazar
-            </button>
+            <button className="btn-aceptar" onClick={() => cambiarEstado(r.id, 'aprobada')}>Aceptar</button>
+            <button className="btn-rechazar" onClick={() => cambiarEstado(r.id, 'rechazada')}>Rechazar</button>
           </>
         )}
+        <button className="btn-icon" title="Ver" onClick={() => setDetalle(r)}>👁</button>
+        <button className="btn-icon" title="PDF" onClick={() => generateCotizacionPdf(r)}>⬇</button>
       </div>
     )},
   ]
