@@ -49,10 +49,10 @@ export default function Cotizar({ clienteSession }) {
         nombre: producto.nombre,
         categoria: producto.categoria,
         proveedor: producto.proveedor,
-        precio_unitario: Number(producto.precio),
+        precio_unitario: Number(producto.precio_venta),
         moneda: producto.moneda || 'USD',
         cantidad: 1,
-        subtotal: Number(producto.precio),
+        subtotal: Number(producto.precio_venta),
         precio_vigente: esPrecioVigente(producto.fecha_sync),
       }]
     })
@@ -265,7 +265,7 @@ export default function Cotizar({ clienteSession }) {
                         <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>{p.categoria}</span>
                       </div>
                       <div className="product-inline-right">
-                        <span className="product-search-price">${Number(p.precio).toFixed(2)} {p.moneda}</span>
+                        <span className="product-search-price">${Number(p.precio_venta).toFixed(2)} {p.moneda}</span>
                         {enCarrito ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             {!enCarrito.precio_vigente && (

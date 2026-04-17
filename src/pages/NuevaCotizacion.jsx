@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { jsPDF } from 'jspdf'
-import { supabase } from '../lib/supabase'
 import Topbar from '../components/Topbar'
 import { esPrecioVigente, getUltimaSync } from '../utils/helpers'
 

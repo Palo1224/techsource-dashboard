@@ -15,7 +15,7 @@ export default function CatalogoPublico() {
   useEffect(() => {
     supabase
       .from('catalogo_proveedores')
-      .select('sku,nombre,categoria,precio,moneda,proveedor,stock,vigente')
+      .select('sku,nombre,categoria,precio_venta,moneda,proveedor,stock,vigente')
       .eq('vigente', true)
       .order('nombre', { ascending: true })
       .then(({ data }) => { setCatalogo(data || []); setLoading(false) })
@@ -35,7 +35,7 @@ export default function CatalogoPublico() {
     { key: 'sku', label: 'SKU' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'categoria', label: 'Categoría', render: (r) => <span className="badge badge-blue">{r.categoria}</span> },
-    { key: 'precio', label: 'Precio', render: (r) => `${r.precio ?? ''} ${r.moneda ?? ''}` },
+    { key: 'precio_venta', label: 'Precio', render: (r) => `${r.precio_venta ?? ''} ${r.moneda ?? ''}` },
   ]
 
   return (
