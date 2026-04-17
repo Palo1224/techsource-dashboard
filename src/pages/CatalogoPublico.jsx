@@ -35,7 +35,7 @@ export default function CatalogoPublico() {
     { key: 'sku', label: 'SKU' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'categoria', label: 'Categoría', render: (r) => <span className="badge badge-blue">{r.categoria}</span> },
-    { key: 'precio_venta', label: 'Precio', render: (r) => `${r.precio_venta ?? ''} ${r.moneda ?? ''}` },
+    { key: 'precio_venta', label: 'Precio', render: (r) => `${r.precio_venta.toFixed(0) ?? ''} ${r.moneda ?? ''}` },
   ]
 
   return (
