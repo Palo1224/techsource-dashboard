@@ -1,7 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { jsPDF } from 'jspdf'
 import Topbar from '../components/Topbar'
+import { supabase } from '../supabase'
 import { esPrecioVigente, getUltimaSync } from '../utils/helpers'
+
+const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK_COTIZACION
 
 export default function NuevaCotizacion() {
   const [catalogoData, setCatalogoData] = useState([])
@@ -117,21 +120,28 @@ export default function NuevaCotizacion() {
       precios_vigentes: todosVigentes,
     }
 
-    const { data, error } = await supabase
-      .from('cotizaciones')
-      .insert([payload])
-      .select()
-      .single()
+    try {
+      const res = await fetch(N8N_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
 
-    setGuardando(false)
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        alert(errData.message || `Error al generar la cotización (código ${res.status}). Intentá de nuevo.`)
+        setGuardando(false)
+        return
+      }
 
-    if (error) {
-      alert('No fue posible guardar la cotización.')
-      console.error(error)
-      return
+      const data = await res.json().catch(() => ({}))
+      setGuardada(data?.id ? data : { ...payload, id: data?.id ?? crypto.randomUUID() })
+    } catch (err) {
+      console.error(err)
+      alert('No se pudo conectar con el servidor de cotizaciones. Verificá tu conexión e intentá de nuevo.')
     }
 
-    setGuardada(data)
+    setGuardando(false)
   }
 
   function descargarPdf() {
