@@ -19,7 +19,7 @@ export default function NuevaCotizacion() {
   useEffect(() => {
     async function cargar() {
       const { data } = await supabase
-        .from('catalogo_proveedores')
+        .from('vista_catalogo_proveedores')
         .select('*')
         .eq('vigente', true)
         .order('nombre', { ascending: true })
@@ -59,10 +59,10 @@ export default function NuevaCotizacion() {
           nombre: producto.nombre,
           categoria: producto.categoria,
           proveedor: producto.proveedor,
-          precio_unitario: Number(producto.precio),
+          precio_unitario: Number(producto.precio_venta),
           moneda: producto.moneda || 'USD',
           cantidad: 1,
-          subtotal: Number(producto.precio),
+          subtotal: Number(producto.precio_venta),
           precio_vigente: vigente,
           fecha_sync: producto.fecha_sync,
         },
@@ -252,7 +252,7 @@ export default function NuevaCotizacion() {
               <option value="">Seleccionar producto</option>
               {productosFiltrados.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nombre} — ${Number(p.precio).toFixed(2)} {p.moneda || ''}
+                  {p.nombre} — ${Number(p.precio_venta).toFixed(0)} {p.moneda || ''}
                 </option>
               ))}
             </select>
@@ -312,7 +312,7 @@ export default function NuevaCotizacion() {
                         <span className="badge badge-blue">{p.proveedor}</span>
                       </td>
                       <td className={!p.precio_vigente ? 'stale-price' : ''}>
-                        ${p.precio_unitario.toFixed(2)}
+                        ${p.precio_unitario.toFixed(0)}
                         {!p.precio_vigente && ' ⚠'}
                       </td>
                       <td>
@@ -325,7 +325,7 @@ export default function NuevaCotizacion() {
                         />
                       </td>
                       <td className={!p.precio_vigente ? 'stale-price' : ''}>
-                        ${p.subtotal.toFixed(2)}
+                        ${p.subtotal.toFixed(0)}
                       </td>
                       <td>
                         <button className="btn-icon" onClick={() => eliminarProducto(i)}>
@@ -339,7 +339,7 @@ export default function NuevaCotizacion() {
                       <strong>Total General</strong>
                     </td>
                     <td>
-                      <strong>${total.toFixed(2)}</strong>
+                      <strong>${total.toFixed(0)}</strong>
                     </td>
                     <td></td>
                   </tr>
@@ -411,7 +411,7 @@ function generarPdf(cotizacionGuardada) {
   }
 
   function money(value, moneda = 'USD') {
-    return `$${Number(value || 0).toFixed(2)} ${moneda}`
+    return `$${Number(value || 0).toFixed(0)} ${moneda}`
   }
 
   function formatDateLong(fecha) {

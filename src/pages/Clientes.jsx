@@ -10,6 +10,7 @@ export default function Clientes() {
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [modal, setModal] = useState(null)
+  const [confirmando, setConfirmando] = useState(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -24,15 +25,12 @@ export default function Clientes() {
 
   useEffect(cargar, [])
 
-  async function togglePermitido(cliente) {
+  async function confirmarToggle() {
+    const cliente = confirmando
     const nuevoValor = cliente.permitido === false ? true : false
-    await supabase
-      .from('clientes')
-      .update({ permitido: nuevoValor })
-      .eq('id', cliente.id)
-    setClientes((prev) =>
-      prev.map((c) => c.id === cliente.id ? { ...c, permitido: nuevoValor } : c)
-    )
+    setConfirmando(null)
+    await supabase.from('clientes').update({ permitido: nuevoValor }).eq('id', cliente.id)
+    setClientes((prev) => prev.map((c) => c.id === cliente.id ? { ...c, permitido: nuevoValor } : c))
   }
 
   const filtrado = useMemo(() => {
@@ -57,7 +55,7 @@ export default function Clientes() {
         const activo = r.permitido !== false
         return (
           <button
-            onClick={() => togglePermitido(r)}
+            onClick={(e) => { e.stopPropagation(); setConfirmando(r) }}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '4px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -74,8 +72,14 @@ export default function Clientes() {
       },
     },
     { key: 'acciones', label: '', render: (r) => (
-      <button className="btn-icon" title="Editar" onClick={() => setModal(r)}>✏️</button>
-    )},
+<button 
+  className="btn-icon" 
+  title="Editar" 
+  style={{ transform: 'scaleX(-1)' }} 
+  onClick={() => setModal(r)}
+>
+  ✏️
+</button>    )},
   ]
 
   return (
@@ -102,6 +106,29 @@ export default function Clientes() {
         <Table columns={columns} data={paginated} loading={loading} emptyMessage="No hay clientes registrados." />
         <Pagination page={page} pageSize={pageSize} total={filtrado.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1) }} label="clientes" />
       </div>
+
+      {confirmando && (
+        <div className="modal-backdrop" onClick={() => setConfirmando(null)}>
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-modal-msg">
+              {confirmando.permitido !== false
+                ? <>¿Deseas <strong>bloquear</strong> a "{confirmando.nombre_completo}"?</>
+                : <>¿Deseas <strong>habilitar</strong> a "{confirmando.nombre_completo}"?</>
+              }
+            </p>
+            <div className="confirm-modal-actions">
+              <button className="confirm-modal-cancel" onClick={() => setConfirmando(null)}>Cancelar</button>
+              <button
+                className="confirm-modal-ok"
+                style={{ background: confirmando.permitido !== false ? '#b42318' : '#177d48' }}
+                onClick={confirmarToggle}
+              >
+                {confirmando.permitido !== false ? 'Sí, bloquear' : 'Sí, habilitar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {modal && (
         <ClientModal

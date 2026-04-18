@@ -16,7 +16,7 @@ export default function Proveedores() {
     async function cargar() {
       const [{ data: prov }, { data: cat }] = await Promise.all([
         supabase.from('proveedores').select('*').order('nombre', { ascending: true }),
-        supabase.from('catalogo_proveedores').select('idproveedor, vigente'),
+        supabase.from('vista_catalogo_proveedores').select('idproveedor, vigente'),
       ])
       setProveedores(prov || [])
       setCatalogo(cat || [])

@@ -15,7 +15,7 @@ export default function Cotizar({ clienteSession }) {
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
+      .from('vista_catalogo_proveedores')
       .select('*')
       .eq('vigente', true)
       .order('nombre', { ascending: true })
@@ -24,7 +24,6 @@ export default function Cotizar({ clienteSession }) {
 
   useEffect(() => {
     if (!clienteSession?.email) return
-    // clienteSession ya viene de la tabla clientes, úsalo directamente
     setClienteData(clienteSession)
   }, [clienteSession])
 
@@ -154,7 +153,7 @@ export default function Cotizar({ clienteSession }) {
         {/* ── Columna principal ── */}
         <div className="cotizar-main-col">
 
-          {/* Tus datos */}
+          {/* 1. Tus datos */}
           <div className="cotizar-card">
             <div className="cotizar-card-header">
               <h2>Tus datos</h2>
@@ -199,37 +198,10 @@ export default function Cotizar({ clienteSession }) {
             )}
           </div>
 
-          {/* Productos seleccionados */}
-          {carrito.length > 0 && (
-            <div className="cotizar-card">
-              <h2 className="cotizar-card-title">Productos seleccionados</h2>
-              <ul className="cotizar-cart-list">
-                {carrito.map((p, i) => (
-                  <li key={i} className="cotizar-cart-item">
-                    <div className="cotizar-cart-item-name">
-                      {p.nombre}
-                      <span className="badge badge-blue" style={{ marginLeft: 8, fontSize: '0.72rem' }}>{p.categoria}</span>
-                      {!p.precio_vigente && <span className="stale-badge" style={{ marginLeft: 6 }}>⚠ +48h</span>}
-                    </div>
-                    <div className="cotizar-cart-item-row">
-                      <div className="product-inline-qty">
-                        <button onClick={() => p.cantidad === 1 ? eliminar(i) : cambiarCantidad(i, p.cantidad - 1)}>−</button>
-                        <span>{p.cantidad}</span>
-                        <button onClick={() => cambiarCantidad(i, p.cantidad + 1)}>+</button>
-                      </div>
-                      <span className="cotizar-cart-item-sub">${p.subtotal.toFixed(2)} {p.moneda}</span>
-                      <button className="cotizar-cart-remove" onClick={() => eliminar(i)}>✕</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Catálogo */}
+          {/* 2. Catálogo / Buscador (Subió de posición) */}
           <div className="cotizar-card">
             <div className="cotizar-card-header" style={{ marginBottom: 10 }}>
-              <h2>Catálogo</h2>
+              <h2>Buscar productos</h2>
               {busqueda && (
                 <button onClick={() => setBusqueda('')}
                   style={{ background: 'none', border: 'none', color: '#9aaabf', cursor: 'pointer', fontSize: '0.82rem' }}>
@@ -244,39 +216,27 @@ export default function Cotizar({ clienteSession }) {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               autoComplete="off"
-              style={{ marginBottom: 8 }}
+              style={{ marginBottom: 12, padding: '12px 16px', fontSize: '1rem' }}
             />
 
-            <ul className="product-inline-list">
+            <ul className="product-inline-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
               {productosFiltrados.length === 0 ? (
                 <li className="product-inline-empty">Sin resultados para "{busqueda}"</li>
               ) : (
                 productosFiltrados.map((p) => {
                   const idx = carrito.findIndex((c) => String(c.producto_id) === String(p.id))
-                  const enCarrito = idx >= 0 ? carrito[idx] : null
+                  const enCarrito = idx >= 0
                   return (
-                    <li
-                      key={p.id}
-                      className={`product-inline-item${enCarrito ? ' in-cart' : ''}`}
-                      onClick={() => !enCarrito && agregar(p)}
-                    >
+                    <li key={p.id} className={`product-inline-item${enCarrito ? ' in-cart' : ''}`}>
                       <div className="product-inline-info">
                         <span className="product-search-name">{p.nombre}</span>
-                        <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>{p.categoria}</span>
+                        <span style={{ fontSize: '0.72rem', color: '#9aaabf' }}>{p.categoria}</span>
                       </div>
                       <div className="product-inline-right">
-                        <span className="product-search-price">${Number(p.precio_venta).toFixed(2)} {p.moneda}</span>
+                        <span className="product-search-price">${Number(p.precio_venta).toFixed(0)} {p.moneda}</span>
+                        
                         {enCarrito ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {!enCarrito.precio_vigente && (
-                              <span className="stale-badge" title="Precio con más de 48 hs">⚠ +48h</span>
-                            )}
-                            <div className="product-inline-qty" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => enCarrito.cantidad === 1 ? eliminar(idx) : cambiarCantidad(idx, enCarrito.cantidad - 1)}>−</button>
-                              <span>{enCarrito.cantidad}</span>
-                              <button onClick={() => cambiarCantidad(idx, enCarrito.cantidad + 1)}>+</button>
-                            </div>
-                          </div>
+                          <span style={{ fontSize: '0.85rem', color: '#0ea472', fontWeight: 600, padding: '4px 8px' }}>✓ Agregado</span>
                         ) : (
                           <button className="product-inline-add" onClick={(e) => { e.stopPropagation(); agregar(p) }}>+ Agregar</button>
                         )}
@@ -287,6 +247,42 @@ export default function Cotizar({ clienteSession }) {
               )}
             </ul>
           </div>
+
+          {/* 3. Productos seleccionados */}
+          {carrito.length > 0 && (
+            <div className="cotizar-card">
+              <h2 className="cotizar-card-title" style={{ marginBottom: 16 }}>Productos seleccionados ({carrito.length})</h2>
+              <ul className="cotizar-cart-list">
+                {carrito.map((p, i) => (
+                  <li key={i} className={`cotizar-cart-item2${!p.precio_vigente ? ' stale' : ''}`}>
+                    <div className="cotizar-cart2-info">
+                      <span className="cotizar-cart2-name">{p.nombre}</span>
+                      <span className="cotizar-cart2-cat">{p.categoria}</span>
+                      {!p.precio_vigente && (
+                        <span className="cotizar-cart2-stale">⚠ Producto sin actualizar hace +48 hs.</span>
+                      )}
+                    </div>
+                    <div className="cotizar-cart2-controls">
+                      <div className="product-inline-qty">
+                        <button onClick={() => p.cantidad === 1 ? eliminar(i) : cambiarCantidad(i, p.cantidad - 1)}>−</button>
+                        <span>{p.cantidad}</span>
+                        <button onClick={() => cambiarCantidad(i, p.cantidad + 1)}>+</button>
+                      </div>
+                      <span className="cotizar-cart2-price">
+                        ${p.subtotal.toFixed(0)} <span className="cotizar-cart2-moneda">{p.moneda}</span>
+                      </span>
+                      <button className="cotizar-cart2-del" onClick={() => eliminar(i)} title="Eliminar">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                          <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
         </div>{/* fin cotizar-main-col */}
 
@@ -306,7 +302,7 @@ export default function Cotizar({ clienteSession }) {
 
             <div className="cotizar-resumen-total-block">
               <span>Total estimado</span>
-              <span>{moneda} {total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+              <span>{moneda} {Math.round(total).toLocaleString('es-AR')}</span>
             </div>
 
             {productosAntiguos.length > 0 && (
@@ -317,7 +313,7 @@ export default function Cotizar({ clienteSession }) {
                   <div className="cotizar-warning-desc">
                     {productosAntiguos.length === 1
                       ? '1 producto tiene precio con más de 48 hs.'
-                      : `${productosAntiguos.length} productos con precio +48 hs.`}
+                      : `${productosAntiguos.length} productos sin actualizar hace +48 hs.`}
                   </div>
                 </div>
               </div>

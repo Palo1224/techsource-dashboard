@@ -1,23 +1,21 @@
-// Modal para crear una nueva cotización desde la zona admin
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabase'
-import Modal from './Modal'
 import { esPrecioVigente } from '../utils/helpers'
 import { generateCotizacionPdf } from '../utils/generatePdf'
 
 export default function QuoteModal({ onClose, onSaved }) {
-  const [catalogo, setCatalogo] = useState([])
-  const [busqueda, setBusqueda] = useState('')
+  const [catalogo, setCatalogo]       = useState([])
+  const [busqueda, setBusqueda]       = useState('')
   const [selectValue, setSelectValue] = useState('')
-  const [carrito, setCarrito] = useState([])
+  const [carrito, setCarrito]         = useState([])
   const [clienteNombre, setClienteNombre] = useState('')
-  const [clienteEmail, setClienteEmail] = useState('')
-  const [guardando, setGuardando] = useState(false)
-  const [guardada, setGuardada] = useState(null)
+  const [clienteEmail, setClienteEmail]   = useState('')
+  const [guardando, setGuardando]     = useState(false)
+  const [guardada, setGuardada]       = useState(null)
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
+      .from('vista_catalogo_proveedores')
       .select('*')
       .eq('vigente', true)
       .order('nombre', { ascending: true })
@@ -37,22 +35,20 @@ export default function QuoteModal({ onClose, onSaved }) {
     if (!producto) return
     setCarrito((prev) => {
       const ex = prev.find((p) => String(p.producto_id) === String(producto.id))
-      if (ex) {
-        return prev.map((p) =>
-          String(p.producto_id) === String(producto.id)
-            ? { ...p, cantidad: p.cantidad + 1, subtotal: (p.cantidad + 1) * p.precio_unitario }
-            : p
-        )
-      }
+      if (ex) return prev.map((p) =>
+        String(p.producto_id) === String(producto.id)
+          ? { ...p, cantidad: p.cantidad + 1, subtotal: (p.cantidad + 1) * p.precio_unitario }
+          : p
+      )
       return [...prev, {
         producto_id: producto.id,
         nombre: producto.nombre,
         categoria: producto.categoria,
         proveedor: producto.proveedor,
-        precio_unitario: Number(producto.precio),
+        precio_unitario: Number(producto.precio_venta),
         moneda: producto.moneda || 'USD',
         cantidad: 1,
-        subtotal: Number(producto.precio),
+        subtotal: Number(producto.precio_venta),
         precio_vigente: esPrecioVigente(producto.fecha_sync),
         fecha_sync: producto.fecha_sync,
       }]
@@ -72,7 +68,7 @@ export default function QuoteModal({ onClose, onSaved }) {
   }
 
   const total = carrito.reduce((acc, p) => acc + p.subtotal, 0)
-  const productosAntiguos = carrito.filter((p) => !p.precio_vigente)
+  const hayDesactualizados = carrito.some((p) => !p.precio_vigente)
 
   async function guardar() {
     if (!clienteNombre.trim() || !clienteEmail.trim()) {
@@ -105,100 +101,130 @@ export default function QuoteModal({ onClose, onSaved }) {
     onSaved?.()
   }
 
+  // ── Éxito ────────────────────────────────────────────
   if (guardada) {
     return (
-      <Modal title="Cotización generada" onClose={onClose}>
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
-          <div style={{ fontSize: 56, color: '#2da66b' }}>◌</div>
-          <h3 style={{ margin: '12px 0 6px' }}>¡Guardada exitosamente!</h3>
-          <p style={{ color: '#6a7d9c', margin: 0 }}>
-            Cliente: <strong>{guardada.nombre_cliente}</strong>
-            <br />ID: <code>{String(guardada.id).substring(0, 8)}</code>
+      <div className="modal-backdrop" onClick={onClose}>
+        <div className="qm-box" onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center', padding: '40px 32px' }}>
+          <div style={{ fontSize: 52, color: '#2da66b', marginBottom: 12 }}>◌</div>
+          <h3 style={{ margin: '0 0 6px', color: '#1d315d' }}>¡Cotización generada!</h3>
+          <p style={{ color: '#6a7d9c', margin: '0 0 4px' }}>Cliente: <strong>{guardada.nombre_cliente}</strong></p>
+          <p style={{ color: '#9aaabf', fontSize: '0.82rem', marginBottom: 20 }}>
+            ID {String(guardada.id).substring(0, 8)}
           </p>
           {!guardada.precios_vigentes && (
-            <p style={{ color: '#925b05', marginTop: 12, fontSize: '0.88rem' }}>
-              ⚠ Algunos precios tienen más de 48 horas. Verificar con proveedor.
-            </p>
+            <div className="qm-alert" style={{ marginBottom: 16 }}>
+              ⚠️ Algunos precios tienen más de 48 horas. Verificar con proveedor.
+            </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 20 }}>
-            <button className="btn-topbar" onClick={() => generateCotizacionPdf(guardada)}>
-              ⬇ PDF
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
+            <button className="btn-topbar" onClick={() => generateCotizacionPdf(guardada, { isAdmin: true })}>⬇ PDF</button>
             <button className="btn-primary" onClick={onClose}>Cerrar</button>
           </div>
         </div>
-      </Modal>
+      </div>
     )
   }
 
+  // ── Formulario ───────────────────────────────────────
   return (
-    <Modal title="Nueva cotización" onClose={onClose} maxWidth={780}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="qm-box" onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="qm-header">
+          <h2 className="qm-title">Nueva cotización</h2>
+          <button className="qm-close" onClick={onClose}>✕</button>
+        </div>
+
         {/* Datos cliente */}
-        <div className="filtros-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <div>
-            <label className="label-form">Nombre del cliente</label>
-            <input className="input-filtro" placeholder="Empresa ABC" value={clienteNombre} onChange={(e) => setClienteNombre(e.target.value)} />
+        <div className="qm-grid-2">
+          <div className="qm-field">
+            <label className="qm-label">Nombre del cliente</label>
+            <input className="qm-input" placeholder="Empresa ABC" value={clienteNombre} onChange={(e) => setClienteNombre(e.target.value)} />
           </div>
-          <div>
-            <label className="label-form">Email</label>
-            <input className="input-filtro" placeholder="cliente@ejemplo.com" value={clienteEmail} onChange={(e) => setClienteEmail(e.target.value)} />
+          <div className="qm-field">
+            <label className="qm-label">Email</label>
+            <input className="qm-input" placeholder="cliente@ejemplo.com" type="email" value={clienteEmail} onChange={(e) => setClienteEmail(e.target.value)} />
           </div>
         </div>
 
-        {/* Buscador */}
-        <div className="filtros-grid" style={{ gridTemplateColumns: '1.6fr 1fr' }}>
-          <input className="input-filtro" placeholder="Buscar producto..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-          <select className="input-filtro" value={selectValue} onChange={(e) => { setSelectValue(e.target.value); agregar(e.target.value) }}>
-            <option value="">Seleccionar...</option>
+        {/* Buscador + select */}
+        <div className="qm-grid-2" style={{ marginTop: 14 }}>
+          <input className="qm-input" placeholder="Buscar producto..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <select className="qm-input" value={selectValue} onChange={(e) => { setSelectValue(e.target.value); agregar(e.target.value) }}>
+            <option value="">Seleccionar producto...</option>
             {productosFiltrados.map((p) => (
-              <option key={p.id} value={p.id}>{p.nombre} — ${Number(p.precio).toFixed(2)}</option>
+              <option key={p.id} value={p.id}>{p.nombre} — {p.moneda} {Number(p.precio_venta).toFixed(0)}</option>
             ))}
           </select>
         </div>
 
-        {/* Advertencia */}
-        {productosAntiguos.length > 0 && (
-          <div className="card warning-card" style={{ padding: '10px 14px' }}>
-            ⚠ Precios desactualizados: {productosAntiguos.map((p) => p.nombre).join(', ')}
+        {/* Alerta desactualizados */}
+        {hayDesactualizados && (
+          <div className="qm-alert">
+            ⚠️ Hay precios desactualizados en esta cotización. Revisá los ítems marcados antes de generar el documento.
           </div>
         )}
 
-        {/* Tabla carrito */}
+        {/* Tabla */}
         {carrito.length > 0 && (
-          <div className="tabla-wrapper">
-            <table className="table">
+          <div className="qm-table-wrap">
+            <table className="qm-table">
               <thead>
                 <tr>
-                  <th>Producto</th><th>Precio</th><th>Cant.</th><th>Subtotal</th><th></th>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Cant.</th>
+                  <th>Subtotal</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {carrito.map((p, i) => (
                   <tr key={i}>
-                    <td>{p.nombre}{!p.precio_vigente && <span className="warn-inline">⚠</span>}</td>
-                    <td className={!p.precio_vigente ? 'stale-price' : ''}>${p.precio_unitario.toFixed(2)}</td>
-                    <td><input type="number" min="1" value={p.cantidad} className="qty-input" onChange={(e) => cambiarCantidad(i, e.target.value)} /></td>
-                    <td>${p.subtotal.toFixed(2)}</td>
-                    <td><button className="btn-icon" onClick={() => eliminar(i)}>🗑</button></td>
+                    <td className="qm-td-nombre">{p.nombre}</td>
+                    <td>
+                      <div className="qm-precio-cell">
+                        <strong>${p.precio_unitario.toFixed(0)}</strong>
+                        {!p.precio_vigente && <span className="qm-badge-stale">Desactualizado</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                        type="number" min="1" value={p.cantidad}
+                        className="qm-qty"
+                        onChange={(e) => cambiarCantidad(i, e.target.value)}
+                      />
+                    </td>
+                    <td className="qm-td-sub">${p.subtotal.toFixed(0)}</td>
+                    <td>
+                      <button className="qm-del" onClick={() => eliminar(i)} title="Eliminar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </td>
                   </tr>
                 ))}
-                <tr>
-                  <td colSpan={3} style={{ textAlign: 'right' }}><strong>Total</strong></td>
-                  <td><strong>${total.toFixed(2)}</strong></td>
-                  <td></td>
-                </tr>
               </tbody>
             </table>
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button className="btn-topbar" onClick={guardar} disabled={guardando}>
-            {guardando ? 'Guardando...' : '✈ Generar Cotización'}
+        {/* Footer */}
+        <div className="qm-footer">
+          {carrito.length > 0 && (
+            <span className="qm-total">
+              Total: <strong>USD ${total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}</strong>
+            </span>
+          )}
+          <button className="qm-btn-primary" onClick={guardar} disabled={guardando}>
+            {guardando ? 'Guardando...' : 'Generar Cotización'}
           </button>
         </div>
+
       </div>
-    </Modal>
+    </div>
   )
 }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Table from '../components/Table'
 import Pagination, { paginate } from '../components/Pagination'
+import Modal from '../components/Modal'
 
 export default function CatalogoPublico() {
   const [catalogo, setCatalogo] = useState([])
@@ -11,11 +12,13 @@ export default function CatalogoPublico() {
   const [categoria, setCategoria] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
+  const [seleccionado, setSeleccionado] = useState(null)
+  const [imgError, setImgError] = useState(false)
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
-      .select('sku,nombre,categoria,precio_venta,moneda,proveedor,stock,vigente')
+      .from('vista_catalogo_proveedores')
+      .select('id,sku,nombre,descripcion,categoria,precio_venta,moneda,proveedor,stock,vigente,imagen_url')
       .eq('vigente', true)
       .order('nombre', { ascending: true })
       .then(({ data }) => { setCatalogo(data || []); setLoading(false) })
@@ -35,7 +38,7 @@ export default function CatalogoPublico() {
     { key: 'sku', label: 'SKU' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'categoria', label: 'Categoría', render: (r) => <span className="badge badge-blue">{r.categoria}</span> },
-    { key: 'precio_venta', label: 'Precio', render: (r) => `${r.precio_venta.toFixed(0) ?? ''} ${r.moneda ?? ''}` },
+    { key: 'precio_venta', label: 'Precio', render: (r) => `${r.moneda ?? ''} ${r.precio_venta?.toFixed(0) ?? ''}` },
   ]
 
   return (
@@ -62,9 +65,42 @@ export default function CatalogoPublico() {
         <div style={{ marginBottom: 10, color: '#6b7c98', fontSize: '0.88rem' }}>
           {filtrado.length} de {catalogo.length} productos
         </div>
-        <Table columns={columns} data={paginated} loading={loading} emptyMessage="No se encontraron productos." />
+        <Table
+          columns={columns}
+          data={paginated}
+          loading={loading}
+          emptyMessage="No se encontraron productos."
+          onRowClick={(p) => { setSeleccionado(p); setImgError(false) }}
+        />
         <Pagination page={page} pageSize={pageSize} total={filtrado.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1) }} label="productos" />
       </section>
+
+      {seleccionado && (
+        <Modal title={seleccionado.nombre} onClose={() => setSeleccionado(null)} maxWidth={520}>
+          <div className="producto-modal-body">
+            {seleccionado.imagen_url && !imgError && (
+              <img
+                src={seleccionado.imagen_url}
+                alt={seleccionado.nombre}
+                className="producto-modal-img"
+                onError={() => setImgError(true)}
+              />
+            )}
+            <div className="producto-modal-meta">
+              <span className="badge badge-blue">{seleccionado.categoria}</span>
+              <span className="producto-modal-precio">
+                {seleccionado.moneda} {seleccionado.precio_venta?.toFixed(0)}
+              </span>
+            </div>
+            {seleccionado.descripcion && (
+              <p className="producto-modal-desc">{seleccionado.descripcion}</p>
+            )}
+            <div className="producto-modal-info">
+              <span>SKU: <strong>{seleccionado.sku}</strong></span>
+            </div>
+          </div>
+        </Modal>
+      )}
     </main>
   )
 }

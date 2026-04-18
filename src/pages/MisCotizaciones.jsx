@@ -26,6 +26,7 @@ export default function MisCotizaciones({ clienteSession }) {
   const [cotizaciones, setCotizaciones] = useState([])
   const [loading, setLoading] = useState(true)
   const [detalle, setDetalle] = useState(null)
+  const [confirmando, setConfirmando] = useState(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -33,7 +34,7 @@ export default function MisCotizaciones({ clienteSession }) {
     const email = clienteSession?.email
     if (!email) return
     supabase
-      .from('cotizaciones')
+      .from('vista_cotizaciones_clientes')
       .select('*')
       .ilike('email_cliente', email)
       .order('fecha_creacion', { ascending: false })
@@ -68,8 +69,8 @@ export default function MisCotizaciones({ clienteSession }) {
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         {r.estado === 'emitida' && (
           <>
-            <button className="btn-aceptar" onClick={() => cambiarEstado(r.id, 'aprobada')}>Aceptar</button>
-            <button className="btn-rechazar" onClick={() => cambiarEstado(r.id, 'rechazada')}>Rechazar</button>
+            <button className="btn-icon" title="Aceptar" style={{ color: '#2da66b' }} onClick={() => setConfirmando({ cotizacion: r, accion: 'aprobada' })}>✓</button>
+            <button className="btn-icon" title="Rechazar" style={{ color: '#E74C3C' }} onClick={() => setConfirmando({ cotizacion: r, accion: 'rechazada' })}>✕</button>
           </>
         )}
         <button className="btn-icon" title="Ver" onClick={() => setDetalle(r)}>👁</button>
@@ -97,6 +98,36 @@ export default function MisCotizaciones({ clienteSession }) {
           onCambiarEstado={cambiarEstado}
         />
       )}
+
+      {confirmando && (
+        <div className="modal-backdrop" onClick={() => setConfirmando(null)}>
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-modal-msg">
+              {confirmando.accion === 'aprobada'
+                ? <>¿Deseás <strong>aceptar</strong> esta cotización?</>
+                : <>¿Deseás <strong>rechazar</strong> esta cotización?</>
+              }
+            </p>
+            <div style={{ background: '#f4f7fb', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: '0.88rem', color: '#1d315d', lineHeight: 1.8 }}>
+              <div><span style={{ color: '#6b7c98' }}>ID:</span> <strong>{shortId(confirmando.cotizacion.id)}</strong></div>
+              <div><span style={{ color: '#6b7c98' }}>Total:</span> <strong>{formatearMoneda(confirmando.cotizacion.total)}</strong></div>
+              <div><span style={{ color: '#6b7c98' }}>Fecha:</span> {formatearFecha(confirmando.cotizacion.fecha_creacion)}</div>
+            </div>
+            <div className="confirm-modal-actions">
+              <button className="confirm-modal-cancel" onClick={() => setConfirmando(null)}>
+                Cancelar
+              </button>
+              <button
+                className="confirm-modal-ok"
+                style={{ background: confirmando.accion === 'aprobada' ? '#2da66b' : '#E74C3C' }}
+                onClick={() => { cambiarEstado(confirmando.cotizacion.id, confirmando.accion); setConfirmando(null) }}
+              >
+                {confirmando.accion === 'aprobada' ? '✓ Sí, aceptar' : '✕ Sí, rechazar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
@@ -116,16 +147,6 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
         </p>
       </div>
 
-      {cotizacion.estado === 'emitida' && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button className="btn-aceptar" onClick={() => onCambiarEstado(cotizacion.id, 'aprobada')}>
-            ✓ Aceptar cotización
-          </button>
-          <button className="btn-rechazar" onClick={() => onCambiarEstado(cotizacion.id, 'rechazada')}>
-            ✕ Rechazar cotización
-          </button>
-        </div>
-      )}
 
       <div className="tabla-wrapper">
         <table className="table">
@@ -137,8 +158,8 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
               <tr key={i}>
                 <td>{p.nombre}</td>
                 <td>{p.cantidad}</td>
-                <td>${Number(p.precio_unitario || 0).toFixed(2)}</td>
-                <td>${Number(p.subtotal || 0).toFixed(2)}</td>
+                <td>${Number(p.precio_unitario || 0).toFixed(0)}</td>
+                <td>${Number(p.subtotal || 0).toFixed(0)}</td>
               </tr>
             ))}
           </tbody>

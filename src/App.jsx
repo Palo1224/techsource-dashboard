@@ -5,7 +5,9 @@ import { supabase } from './supabase'
 import PublicNavbar from './components/PublicNavbar'
 import AdminNavbar from './components/AdminNavbar'
 
-import Login from './pages/Login'
+import LoginCliente from './pages/LoginCliente'
+import LoginAdmin from './pages/LoginAdmin'
+import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard'
 import Catalogo from './pages/Catalogo'
 import CatalogoPublico from './pages/CatalogoPublico'
@@ -29,6 +31,7 @@ function PublicLayout({ session, clienteSession, adminVerificado, onClienteLogou
         onClienteLogout={onClienteLogout}
       />
       <Outlet context={{ session, clienteSession }} />
+      <Footer />
     </>
   )
 }
@@ -53,16 +56,8 @@ function RequireCliente({ clienteSession, children }) {
 
 function RequireAdmin({ session, adminVerificado, children }) {
   if (session === undefined || adminVerificado === undefined) return null  // cargando
-  if (!session || !adminVerificado) return <Navigate to="/login" replace />
+  if (!session || !adminVerificado) return <Navigate to="/ts-panel/auth" replace />
   return children
-}
-
-function RedirectByRole({ session, clienteSession, adminVerificado }) {
-  if (session === undefined || (session && adminVerificado === undefined)) return null // cargando
-  if (session && adminVerificado) return <Navigate to="/dashboard" replace />
-  if (clienteSession)             return <Navigate to="/mis-cotizaciones" replace />
-  if (session && !adminVerificado) return <Navigate to="/login" replace />
-  return <Navigate to="/login" replace />
 }
 
 // ─── App ────────────────────────────────────────────────────────────────────
@@ -141,13 +136,23 @@ export default function App() {
       {/* Raíz */}
       <Route path="/" element={<Navigate to="/catalogo" replace />} />
 
-      {/* Login */}
+      {/* Login cliente */}
       <Route
         path="/login"
         element={
           loginBloqueado
             ? <Navigate to="/dashboard" replace />
-            : <Login onClienteLogin={handleClienteLogin} />
+            : <LoginCliente onClienteLogin={handleClienteLogin} />
+        }
+      />
+
+      {/* Login admin */}
+      <Route
+        path="/ts-panel/auth"
+        element={
+          loginBloqueado
+            ? <Navigate to="/dashboard" replace />
+            : <LoginAdmin />
         }
       />
 

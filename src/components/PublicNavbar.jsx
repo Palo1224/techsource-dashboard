@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 
-export default function PublicNavbar({ session, admin, clienteSession, onClienteLogout }) {
+export default function PublicNavbar({ session, clienteSession, onClienteLogout }) {
   const [ultimaSync, setUltimaSync] = useState(null)
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
+      .from('vista_catalogo_proveedores')
       .select('fecha_sync')
       .order('fecha_sync', { ascending: false })
       .limit(1)
@@ -42,11 +42,6 @@ export default function PublicNavbar({ session, admin, clienteSession, onCliente
         {clienteSession && (
           <NavLink to="/mis-cotizaciones" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             Mis Cotizaciones
-          </NavLink>
-        )}
-        {admin && (
-          <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-            Admin ↗
           </NavLink>
         )}
       </nav>

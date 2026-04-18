@@ -12,10 +12,13 @@ export default function Catalogo() {
   const [proveedor, setProveedor] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
+  const [seleccionado, setSeleccionado] = useState(null)
+  const [imgError, setImgError] = useState(false)
+  const [confirmando, setConfirmando] = useState(null)
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
+      .from('vista_catalogo_proveedores')
       .select('*')
       .order('nombre', { ascending: true })
       .then(({ data }) => { setCatalogo(data || []); setLoading(false) })
@@ -35,26 +38,34 @@ export default function Catalogo() {
 
   const paginated = paginate(filtrado, page, pageSize)
 
-  async function toggleVigente(item) {
+  function pedirConfirmacion(e, item) {
+    e.stopPropagation()
+    setConfirmando(item)
+  }
+
+  async function confirmarToggle() {
+    const item = confirmando
     const nuevoValor = !item.vigente
+    setConfirmando(null)
     await supabase.from('catalogo_proveedores').update({ vigente: nuevoValor }).eq('id', item.id)
     setCatalogo((prev) => prev.map((p) => p.id === item.id ? { ...p, vigente: nuevoValor } : p))
+    if (seleccionado?.id === item.id) setSeleccionado((s) => ({ ...s, vigente: nuevoValor }))
   }
 
   const columns = [
     { key: 'sku', label: 'SKU' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'categoria', label: 'Categoría', render: (r) => <span className="badge badge-blue-soft">{r.categoria}</span> },
-    { key: 'precio', label: 'Precio costo', render: (r) => `${r.precio ?? ''} ${r.moneda ?? ''}` },
-    { key: 'precio_venta', label: 'Precio venta', render: (r) => `${r.precio_venta ?? ''} ${r.moneda ?? ''}` },
+    { key: 'precio', label: 'Precio costo', render: (r) => `${(r.moneda ?? '')} ${r.precio.toFixed(0) ?? ''}` },
+    { key: 'precio_venta', label: 'Precio venta', render: (r) => ` ${(r.moneda ?? '')} ${r.precio_venta.toFixed(0) ?? ''} ` },
     { key: 'proveedor', label: 'Proveedor' },
-    { key: 'stock', label: 'Stock' },
+    { key: 'stock', label: 'Stock', render: (r) => <span style={{ display: 'block', textAlign: 'center' }}>{r.stock}</span> },
     { key: 'fecha_sync', label: 'Última Sync', render: (r) => r.fecha_sync ? new Date(r.fecha_sync).toLocaleString() : '' },
     {
       key: 'vigente', label: 'Vigente',
       render: (r) => (
         <button
-          onClick={() => toggleVigente(r)}
+          onClick={(e) => pedirConfirmacion(e, r)}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '4px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
@@ -72,7 +83,7 @@ export default function Catalogo() {
   ]
 
   return (
-    <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <div className="page-header">
         <div>
           <h1 className="page-title">Catálogo</h1>
@@ -95,9 +106,102 @@ export default function Catalogo() {
       </div>
 
       <div className="card">
-        <Table columns={columns} data={paginated} loading={loading} emptyMessage="No se encontraron productos." />
+        <Table
+          columns={columns}
+          data={paginated}
+          loading={loading}
+          emptyMessage="No se encontraron productos."
+          onRowClick={(p) => { setSeleccionado(p); setImgError(false) }}
+        />
         <Pagination page={page} pageSize={pageSize} total={filtrado.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1) }} label="productos" />
       </div>
+
+      {seleccionado && (
+        <div className="modal-backdrop" onClick={() => setSeleccionado(null)}>
+          <div className="prod-admin-modal" onClick={(e) => e.stopPropagation()}>
+
+            {/* Imagen */}
+            <div className="prod-admin-modal-img-wrap">
+              {seleccionado.imagen_url && !imgError
+                ? <img src={seleccionado.imagen_url} alt={seleccionado.nombre} onError={() => setImgError(true)} />
+                : <div className="prod-admin-modal-img-placeholder">📦</div>
+              }
+              <button className="prod-admin-modal-close" onClick={() => setSeleccionado(null)}>✕</button>
+            </div>
+
+            {/* Info */}
+            <div className="prod-admin-modal-body">
+              <div>
+                <h2 className="prod-admin-modal-title">{seleccionado.nombre}</h2>
+                <p className="prod-admin-modal-sku">{seleccionado.sku}</p>
+              </div>
+
+              {seleccionado.descripcion && (
+                <p className="prod-admin-modal-desc">{seleccionado.descripcion}</p>
+              )}
+
+              <div className="prod-admin-modal-rows">
+                <div className="prod-admin-modal-row">
+                  <span>Precio costo</span>
+                  <strong>{seleccionado.moneda} {Number(seleccionado.precio).toLocaleString()}</strong>
+                </div>
+                <div className="prod-admin-modal-row">
+                  <span>Precio venta</span>
+                  <strong>{seleccionado.moneda} {Number(seleccionado.precio_venta).toLocaleString()}</strong>
+                </div>
+                <div className="prod-admin-modal-row">
+                  <span>Stock</span>
+                  <strong>{seleccionado.stock} unidades</strong>
+                </div>
+                <div className="prod-admin-modal-row">
+                  <span>Proveedor</span>
+                  <strong>{seleccionado.proveedor}</strong>
+                </div>
+                <div className="prod-admin-modal-row">
+                  <span>Estado</span>
+                  <button
+                    onClick={(e) => pedirConfirmacion(e, seleccionado)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '4px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                      fontWeight: 700, fontSize: '0.78rem', fontFamily: 'Inter, sans-serif',
+                      background: seleccionado.vigente ? '#d7f3e3' : '#fde2e1',
+                      color: seleccionado.vigente ? '#177d48' : '#b42318',
+                    }}
+                  >
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: seleccionado.vigente ? '#177d48' : '#b42318', flexShrink: 0 }} />
+                    {seleccionado.vigente ? 'Vigente' : 'Inactivo'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {confirmando && (
+        <div className="modal-backdrop" onClick={() => setConfirmando(null)}>
+          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <p className="confirm-modal-msg">
+              {confirmando.vigente
+                ? <>¿Deseas <strong>desactivar</strong> "{confirmando.nombre}"?</>
+                : <>¿Deseas <strong>activar</strong> "{confirmando.nombre}"?</>
+              }
+            </p>
+            <div className="confirm-modal-actions">
+              <button className="confirm-modal-cancel" onClick={() => setConfirmando(null)}>Cancelar</button>
+              <button
+                className="confirm-modal-ok"
+                style={{ background: confirmando.vigente ? '#b42318' : '#177d48' }}
+                onClick={confirmarToggle}
+              >
+                {confirmando.vigente ? 'Sí, desactivar' : 'Sí, activar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

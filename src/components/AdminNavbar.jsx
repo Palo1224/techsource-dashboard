@@ -16,7 +16,7 @@ export default function AdminNavbar() {
 
   useEffect(() => {
     supabase
-      .from('catalogo_proveedores')
+      .from('vista_catalogo_proveedores')
       .select('fecha_sync')
       .order('fecha_sync', { ascending: false })
       .limit(1)

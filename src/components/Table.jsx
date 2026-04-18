@@ -2,7 +2,7 @@
 // data = array of objects
 // loading = boolean
 // emptyMessage = string
-export default function Table({ columns, data, loading, emptyMessage = 'No hay datos.' }) {
+export default function Table({ columns, data, loading, emptyMessage = 'No hay datos.', onRowClick }) {
   if (loading) {
     return <p className="table-loading">Cargando...</p>
   }
@@ -23,7 +23,11 @@ export default function Table({ columns, data, loading, emptyMessage = 'No hay d
         </thead>
         <tbody>
           {data.map((row, i) => (
-            <tr key={row.id ?? i}>
+            <tr
+              key={row.id ?? i}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              style={onRowClick ? { cursor: 'pointer' } : undefined}
+            >
               {columns.map((col) => (
                 <td key={col.key}>
                   {col.render ? col.render(row) : (row[col.key] ?? '')}

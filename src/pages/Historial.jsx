@@ -17,7 +17,7 @@ export default function Historial() {
   useEffect(() => {
     Promise.all([
       supabase.from('historial_precios').select('*').order('fecha_cambio', { ascending: true }),
-      supabase.from('catalogo_proveedores').select('sku,nombre,categoria,proveedor,source,fecha_sync'),
+      supabase.from('vista_catalogo_proveedores').select('sku,nombre,categoria,proveedor,source,fecha_sync'),
     ]).then(([{ data: hist }, { data: cat }]) => {
       setHistorial(hist || [])
       setCatalogo(cat || [])

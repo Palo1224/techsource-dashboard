@@ -12,9 +12,9 @@ export default function Dashboard() {
   useEffect(() => {
     async function cargar() {
       const [{ data: cat }, { data: hist }, { data: cot }] = await Promise.all([
-        supabase.from('catalogo_proveedores').select('*'),
+        supabase.from('vista_catalogo_proveedores').select('*'),
         supabase.from('historial_precios').select('*').order('fecha_cambio', { ascending: false }),
-        supabase.from('cotizaciones').select('*'),
+        supabase.from('vista_cotizaciones_clientes').select('*'),
       ])
       setCatalogo(cat || [])
       setHistorial(hist || [])
@@ -67,16 +67,56 @@ export default function Dashboard() {
           Sistema operativo
         </div>
       </section>
+      {/* ── Accesos rápidos ── */}
+
+      <section>
+        <h2 style={{ marginBottom: 12 }}>Accesos rápidos</h2>
+        <div className="dash-acciones">
+          {acciones.map((a) => (
+            <Link key={a.to} to={a.to} className="dash-accion-card">
+              <span className="dash-accion-icon">{a.icon}</span>
+              <span className="dash-accion-label">{a.label}</span>
+              <span className="dash-accion-desc">{a.desc}</span>
+              <span className="dash-accion-arrow">→</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <h2 style={{ marginBottom: 12 }}>Resumen general</h2>
 
       {/* ── KPIs ── */}
+{/* ── KPIs ── */}
       <section className="kpis">
         {kpis.map((k) => (
-          <div key={k.label} className="card kpi dash-kpi" style={{ '--kpi-color': k.color, '--kpi-bg': k.bg }}>
-            <div className="dash-kpi-icon">{k.icon}</div>
-            <div>
-              <p className="dash-kpi-value">{loading ? '—' : k.value.toLocaleString()}</p>
-              <h3 className="dash-kpi-label">{k.label}</h3>
+          <div 
+            key={k.label} 
+            className="card kpi dash-kpi" 
+            style={{ 
+              '--kpi-color': k.color, 
+              '--kpi-bg': k.bg,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
+              padding: '24px 16px', // Le da aire para que respire el diseño
+              gap: '8px' // Separa el ícono, el número y el texto
+            }}
+          >
+            {/* Ícono */}
+            <div className="dash-kpi-icon" style={{ margin: 0 }}>
+              {k.icon}
             </div>
+            
+            {/* Número */}
+            <p className="dash-kpi-value" style={{ margin: 0, lineHeight: 1 }}>
+              {loading ? '—' : k.value.toLocaleString()}
+            </p>
+            
+            {/* Texto (Aseguramos que no tenga mayúsculas sostenidas) */}
+            <h3 className="dash-kpi-label" style={{ margin: 0, textTransform: 'none' }}>
+              {k.label}
+            </h3>
           </div>
         ))}
       </section>
@@ -122,20 +162,7 @@ export default function Dashboard() {
 
       </section>
 
-      {/* ── Accesos rápidos ── */}
-      <section>
-        <h2 style={{ marginBottom: 12 }}>Accesos rápidos</h2>
-        <div className="dash-acciones">
-          {acciones.map((a) => (
-            <Link key={a.to} to={a.to} className="dash-accion-card">
-              <span className="dash-accion-icon">{a.icon}</span>
-              <span className="dash-accion-label">{a.label}</span>
-              <span className="dash-accion-desc">{a.desc}</span>
-              <span className="dash-accion-arrow">→</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+
 
     </div>
   )
@@ -157,7 +184,7 @@ function CambiosList({ rows }) {
               background: sube ? '#fde8e8' : '#e6f9f1',
               color: sube ? '#c0392b' : '#0ea472',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.8rem', fontWeight: 800,
+              fontSize: '0.8rem', fontWeight: 600,
             }}>
               {diff === 0 ? '•' : sube ? '▲' : '▼'}
             </span>

@@ -4,8 +4,8 @@ export function shortId(id) {
 }
 
 export function formatearMoneda(valor) {
-  const num = Number(valor || 0)
-  return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+  const num = Math.round(Number(valor || 0))
+  return num.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 })
 }
 
 export function formatearFecha(fecha) {

@@ -11,9 +11,14 @@ export function parseProductos(raw) {
   if (!raw) return []
   if (Array.isArray(raw)) return raw
   if (typeof raw === 'string') {
-    try { return JSON.parse(raw) } catch { return [] }
+    try { raw = JSON.parse(raw) } catch { return [] }
   }
-  return []
+  if (typeof raw !== 'object' || raw === null) return []
+  // Single product object (has product fields directly)
+  if ('nombre' in raw || 'producto_id' in raw) return [raw]
+  // Map of products {0: {...}, 1: {...}}
+  const vals = Object.values(raw)
+  return vals.every((v) => typeof v === 'object' && v !== null) ? vals : []
 }
 
 const ESTADOS = [
@@ -50,7 +55,7 @@ export default function Cotizaciones() {
   function cargar() {
     setLoading(true)
     supabase
-      .from('cotizaciones')
+      .from('vista_cotizaciones_clientes')
       .select('*')
       .order('fecha_creacion', { ascending: false })
       .then(({ data }) => { setCotizaciones(data || []); setLoading(false) })
@@ -112,7 +117,7 @@ export default function Cotizaciones() {
     { key: 'acciones', label: '', render: (r) => (
       <div style={{ display: 'flex', gap: 6 }}>
         <button className="btn-icon" title="Ver detalle" onClick={() => setDetalle(r)}>👁</button>
-        <button className="btn-icon" title="Descargar PDF" onClick={() => generateCotizacionPdf(r)}>⬇</button>
+        <button className="btn-icon" title="Descargar PDF" onClick={() => generateCotizacionPdf(r, { isAdmin: true })}>⬇</button>
       </div>
     )},
   ]
@@ -166,7 +171,7 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
         <div>
           <p style={{ margin: '0 0 4px' }}><strong>Cliente:</strong> {cotizacion.nombre_cliente}</p>
           <p style={{ margin: '0 0 4px' }}><strong>Email:</strong> {cotizacion.email_cliente}</p>
-          <p style={{ margin: 0 }}><strong>Total:</strong> {formatearMoneda(cotizacion.total)}</p>
+          <p style={{ margin: 0 }}><strong>Total:</strong> {formatearMoneda(cotizacion.total)} <span style={{ color: '#6b7c98', fontWeight: 400, fontSize: '0.85rem' }}>USD</span></p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6b7c98', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estado</span>
@@ -188,6 +193,9 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
             <tr><th>Producto</th><th>Proveedor</th><th>Precio Unit.</th><th>Cantidad</th><th>Subtotal</th></tr>
           </thead>
           <tbody>
+            {productos.length === 0 && (
+              <tr><td colSpan={5} style={{ color: '#9aaabf', padding: '16px', textAlign: 'center' }}>Sin productos registrados</td></tr>
+            )}
             {productos.map((p, i) => {
               const stale = p.precio_vigente === false
               return (
@@ -195,10 +203,10 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
                   <td>{p.nombre}</td>
                   <td>{p.proveedor || ''}</td>
                   <td style={{ color: stale ? '#E67E22' : undefined, fontWeight: stale ? 700 : undefined }}>
-                    {stale ? '⚠ ' : ''}${Number(p.precio_unitario || 0).toFixed(2)}
+                    {stale ? '⚠ ' : ''}${Number(p.precio_unitario || 0).toFixed(0)}
                   </td>
                   <td>{p.cantidad || 1}</td>
-                  <td>${Number(p.subtotal || 0).toFixed(2)}</td>
+                  <td>${Number(p.subtotal || 0).toFixed(0)}</td>
                 </tr>
               )
             })}
@@ -211,7 +219,7 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
         </p>
       )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-        <button className="btn-topbar" onClick={() => generateCotizacionPdf(cotizacion)}>⬇ PDF</button>
+        <button className="btn-topbar" onClick={() => generateCotizacionPdf(cotizacion, { isAdmin: true })}>⬇ PDF</button>
       </div>
     </Modal>
   )
