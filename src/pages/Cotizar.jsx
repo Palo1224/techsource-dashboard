@@ -160,7 +160,7 @@ export default function Cotizar({ clienteSession }) {
                     <div className="cotizar-card-header">
             <h2>Tus datos</h2>
             {!clienteSession && (
-              <p style={{ fontSize: '0.82rem', color: '#5b6f93', margin: '4px 0 0 0' }}>
+              <p style={{ fontSize: '0.82rem', color: '#5b6f93', margin: '4px 0 0 0', textAlign: 'right' }}>
                 ¿Ya tenés cuenta?{' '}
                 <Link to="/login" style={{ color: '#2f6fed', fontWeight: 600, textDecoration: 'none' }}>
                   Iniciá sesión
@@ -304,8 +304,9 @@ export default function Cotizar({ clienteSession }) {
 
             <div className="cotizar-resumen-total-block">
               <span>Total estimado</span>
-              <span>{moneda} {Math.round(total).toLocaleString('es-AR')}</span>
+              <span>{moneda} {Math.round(total).toLocaleString('es-AR')} <sup style={{ fontSize: '0.7em', color: '#9aaabf' }}>*</sup></span>
             </div>
+            <p style={{ fontSize: '0.72rem', color: '#9aaabf', margin: '4px 0 0', textAlign: 'right' }}>* Precios pueden variar</p>
 
             {productosAntiguos.length > 0 && (
               <div className="cotizar-warning-block">
@@ -322,7 +323,7 @@ export default function Cotizar({ clienteSession }) {
             )}
 
             <button className="cotizar-submit-btn" onClick={guardar} disabled={guardando || !carrito.length}>
-              {guardando ? 'Enviando...' : 'Solicitar cotización'}
+              {guardando ? 'Enviando...' : 'Solicitar Cotización'}
             </button>
             <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9aaabf', margin: '8px 0 0' }}>
               Te contactaremos a la brevedad.

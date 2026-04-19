@@ -51,12 +51,17 @@ export default function CatalogoPublico() {
       </section>
 
       <section className="card filters-card" style={{ marginBottom: 14 }}>
-        <div className="filtros-grid" style={{ gridTemplateColumns: '1.6fr 1fr' }}>
-          <input className="input-filtro" placeholder="Buscar por nombre..." value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPage(1) }} />
-          <select className="input-filtro" value={categoria} onChange={(e) => { setCategoria(e.target.value); setPage(1) }}>
-            <option value="">Todas las categorías</option>
-            {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+        <input className="input-filtro" placeholder="Buscar por nombre..." value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPage(1) }} style={{ marginBottom: 12 }} />
+        <div className="category-pills">
+          {['', ...categorias].map((c) => (
+            <button
+              key={c || '__todas'}
+              className={`category-pill${categoria === c ? ' active' : ''}`}
+              onClick={() => { setCategoria(c); setPage(1) }}
+            >
+              {c || 'Todos'}
+            </button>
+          ))}
         </div>
       </section>
 

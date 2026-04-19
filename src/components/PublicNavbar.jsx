@@ -55,7 +55,7 @@ export default function PublicNavbar({ session, clienteSession, onClienteLogout 
         )}
 
         <Link to="/cotizar" className="btn-nueva-cotizacion">
-          + Solicitar cotización
+          + Solicitar Cotización
         </Link>
 
         {estaLogueado ? (

@@ -61,7 +61,7 @@ export default function AdminNavbar() {
           <span>Sync: {syncText}</span>
         </div>
         <button className="admin-nueva-btn" onClick={() => window.location.href = '/cotizaciones'}>
-          + Solicitar cotización
+          + Solicitar Cotización
         </button>
         <button className="admin-logout-btn" onClick={handleLogout} title="Salir">⏻</button>
       </div>

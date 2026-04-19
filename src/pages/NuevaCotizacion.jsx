@@ -190,7 +190,7 @@ export default function NuevaCotizacion() {
                 style={{ background: '#fff', color: '#1d315d' }}
                 onClick={resetear}
               >
-                ↻ Nueva Cotización
+                ↻ Solicitar una nueva cotización
               </button>
             </div>
           </section>

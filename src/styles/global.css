@@ -709,6 +709,43 @@ h2 {
   color: #b42318;
 }
 
+/* PILLS DE CATEGORÍA */
+.category-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+.category-pills::-webkit-scrollbar { display: none; }
+
+.category-pill {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #d1daea;
+  background: transparent;
+  color: #4b5e7a;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.category-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.category-pill.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
 /* FILTROS */
 .filtros-grid {
   display: grid;

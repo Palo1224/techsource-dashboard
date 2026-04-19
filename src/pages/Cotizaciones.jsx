@@ -129,7 +129,7 @@ export default function Cotizaciones() {
           <h1 className="page-title">Cotizaciones</h1>
           <p className="page-subtitle">{filtrado.length} cotización(es)</p>
         </div>
-        <button className="btn-topbar" onClick={() => setShowQuote(true)}>+ Nueva cotización</button>
+        <button className="btn-topbar" onClick={() => setShowQuote(true)}>+ Solicitar Cotización</button>
       </div>
 
       <div className="card" style={{ marginBottom: 14 }}>
