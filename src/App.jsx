@@ -22,7 +22,7 @@ import Proveedores from './pages/Proveedores'
 
 function PublicLayout({ session, clienteSession, adminVerificado, onClienteLogout }) {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className="bg-illustration" />
       <PublicNavbar
         session={session}
@@ -30,9 +30,11 @@ function PublicLayout({ session, clienteSession, adminVerificado, onClienteLogou
         clienteSession={clienteSession}
         onClienteLogout={onClienteLogout}
       />
-      <Outlet context={{ session, clienteSession }} />
+      <div style={{ flex: 1 }}>
+        <Outlet context={{ session, clienteSession }} />
+      </div>
       <Footer />
-    </>
+    </div>
   )
 }
 

@@ -157,18 +157,18 @@ export default function Cotizar({ clienteSession }) {
 
           {/* 1. Tus datos */}
           <div className="cotizar-card">
-            <div className="cotizar-card-header">
-              <h2>Tus datos</h2>
-              {!clienteSession && (
-                <span style={{ fontSize: '0.82rem', color: '#5b6f93' }}>
-                  ¿Ya tenés cuenta?{' '}
-                  <Link to="/login" style={{ color: '#2f6fed', fontWeight: 600, textDecoration: 'none' }}>
-                    Iniciá sesión
-                  </Link>
-                </span>
-              )}
-            </div>
-
+                    <div className="cotizar-card-header">
+            <h2>Tus datos</h2>
+            {!clienteSession && (
+              <p style={{ fontSize: '0.82rem', color: '#5b6f93', margin: '4px 0 0 0' }}>
+                ¿Ya tenés cuenta?{' '}
+                <Link to="/login" style={{ color: '#2f6fed', fontWeight: 600, textDecoration: 'none' }}>
+                  Iniciá sesión
+                </Link>
+                {' '}para ver tu historial de cotizaciones.
+              </p>
+            )}
+          </div>
             {clienteSession && clienteData ? (
               <div className="cliente-card">
                 <div className="cliente-card-avatar">

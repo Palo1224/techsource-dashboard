@@ -32,7 +32,7 @@ export default function Topbar({ ultimaSync }) {
           <span>{syncText}</span>
         </div>
         <NavLink to="/nueva-cotizacion" className="btn-topbar">
-          + Nueva cotización
+          + Solicitar cotización
         </NavLink>
         <button className="btn-login">Iniciar sesión</button>
       </div>

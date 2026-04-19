@@ -58,7 +58,7 @@ export default function LoginAdmin() {
         <form className="login-admin-form" onSubmit={handleSubmit}>
           <input
             type="email"
-            placeholder="Correo admin"
+            placeholder="Correo electrónico"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

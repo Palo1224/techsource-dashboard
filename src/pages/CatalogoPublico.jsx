@@ -48,7 +48,6 @@ export default function CatalogoPublico() {
           <h1>Catálogo de Productos</h1>
           <p>Explorá nuestra oferta y solicitá una cotización personalizada al instante.</p>
         </div>
-        <Link to="/cotizar" className="catalogo-hero-btn">Solicitar cotización →</Link>
       </section>
 
       <section className="card filters-card" style={{ marginBottom: 14 }}>

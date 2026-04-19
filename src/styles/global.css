@@ -65,7 +65,7 @@ body::before {
   z-index: 0;
   text-align: center;
   padding: 24px 16px;
-  margin-top: 40px;
+  margin-top: auto;
   border-top: 1px solid #e8edf4;
   color: #b0baca;
   font-size: 0.8rem;
