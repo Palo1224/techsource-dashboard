@@ -75,8 +75,9 @@ export default function Cotizaciones() {
     return cotizaciones.filter((item) => {
       const id = (item.id || '').toLowerCase()
       const cliente = (item.nombre_cliente || '').toLowerCase()
+      const email = (item.email_cliente || '').toLowerCase()
       const fecha = item.fecha_creacion ? new Date(item.fecha_creacion) : null
-      const cumpleTexto = !busqueda || id.includes(busqueda.toLowerCase()) || cliente.includes(busqueda.toLowerCase())
+      const cumpleTexto = !busqueda || id.includes(busqueda.toLowerCase()) || cliente.includes(busqueda.toLowerCase()) || email.includes(busqueda.toLowerCase())
       const cumpleEstado = !filtroEstado || item.estado === filtroEstado
       let cumpleValidacion = true
       if (validacion === 'vigentes') cumpleValidacion = item.precios_vigentes === true
@@ -134,7 +135,7 @@ export default function Cotizaciones() {
 
       <div className="card" style={{ marginBottom: 14 }}>
         <div className="filtros-grid filtros-cotizaciones">
-          <input className="input-filtro" placeholder="Buscar cliente o ID..." value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPage(1) }} />
+          <input className="input-filtro" placeholder="Buscar por email, nombre o ID..." value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPage(1) }} />
           <select className="input-filtro" value={filtroEstado} onChange={(e) => { setFiltroEstado(e.target.value); setPage(1) }}>
             <option value="">Todos los estados</option>
             {ESTADOS.map((e) => <option key={e.value} value={e.value}>{e.label}</option>)}
