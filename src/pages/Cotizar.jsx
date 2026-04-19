@@ -82,39 +82,41 @@ export default function Cotizar({ clienteSession }) {
     if (!carrito.length) { alert('Agregá al menos un producto.'); return }
     setGuardando(true)
 
-    let clienteId = clienteData?.id ?? null
-    if (!clienteId) {
-      const { data: existing } = await supabase.from('clientes').select('id').ilike('email', emailCliente).maybeSingle()
-      if (existing) {
-        clienteId = existing.id
-      } else {
-        const { data: nuevo } = await supabase
-          .from('clientes')
-          .insert([{ nombre_completo: form.nombre, email: form.email, telefono: form.telefono || null }])
-          .select('id').single()
-        clienteId = nuevo?.id ?? null
-      }
+    const payload = {
+      nombre_cliente: nombreCliente,
+      email_cliente: emailCliente,
+      telefono: form.telefono || null,
+      productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente }) =>
+        ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente })
+      ),
+      total,
+      fecha_creacion: new Date().toISOString(),
+      estado: 'emitida',
+      precios_vigentes: carrito.every((p) => p.precio_vigente),
     }
 
-    const { data, error } = await supabase
-      .from('cotizaciones')
-      .insert([{
+    try {
+      const res = await fetch(import.meta.env.VITE_N8N_WEBHOOK_COTIZACION, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error('Error del servidor')
+      // N8N responde 200 sin body — construimos el estado de éxito con los datos locales
+      setGuardada({
         nombre_cliente: nombreCliente,
         email_cliente: emailCliente,
-        cliente_id: clienteId,
-        productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente }) =>
-          ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente })
-        ),
+        precios_vigentes: payload.precios_vigentes,
+        productos: payload.productos,
         total,
-        fecha_creacion: new Date().toISOString(),
-        estado: 'emitida',
-        precios_vigentes: carrito.every((p) => p.precio_vigente),
-      }])
-      .select().single()
-
-    setGuardando(false)
-    if (error) { alert('Error al guardar.'); return }
-    setGuardada(data)
+        fecha_creacion: payload.fecha_creacion,
+        id: crypto.randomUUID(), // placeholder para mostrar ID corto
+      })
+    } catch {
+      alert('Error al enviar la cotización. Intentá de nuevo.')
+    } finally {
+      setGuardando(false)
+    }
   }
 
   // ── Éxito ────────────────────────────────────────────────────────────────
