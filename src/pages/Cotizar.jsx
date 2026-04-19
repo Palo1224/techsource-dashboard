@@ -161,11 +161,10 @@ export default function Cotizar({ clienteSession }) {
             <h2>Tus datos</h2>
             {!clienteSession && (
               <p style={{ fontSize: '0.82rem', color: '#5b6f93', margin: '4px 0 0 0', textAlign: 'right' }}>
-                ¿Ya tenés cuenta?{' '}
-                <Link to="/login" style={{ color: '#2f6fed', fontWeight: 600, textDecoration: 'none' }}>
+               <Link to="/login" style={{ color: '#2f6fed', fontWeight: 600, textDecoration: 'none' }}>
                   Iniciá sesión
                 </Link>
-                {' '}para ver tu historial de cotizaciones.
+                {' '}para ver tu historial de cotizaciones
               </p>
             )}
           </div>
