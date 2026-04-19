@@ -133,13 +133,13 @@ export default function Cotizar({ clienteSession }) {
             ID {String(guardada.id).substring(0, 8)} · Te contactaremos a la brevedad.
           </p>
           {!guardada.precios_vigentes && (
-            <div className="warning-card" style={{ marginBottom: 20, textAlign: 'left' }}>
-              ⚠ Algunos precios tienen más de 48 horas. Te recomendamos verificar.
+            <div className="warning-card" style={{ marginBottom: 20, textAlign: 'center' }}>
+              ⚠ Algunos precios pueden haber cambiado, te lo confirmamos al contactarte.
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
             <button className="btn-topbar" onClick={() => generateCotizacionPdf(guardada)}>⬇ Descargar PDF</button>
-            <button className="btn-primary" onClick={() => { setGuardada(null); setCarrito([]) }}>↻ Nueva</button>
+            <button className="btn-primary" onClick={() => { setGuardada(null); setCarrito([]) }}>↻ Nueva cotización</button>
             {clienteSession && <Link to="/mis-cotizaciones" className="btn-primary">Mis cotizaciones</Link>}
           </div>
         </div>
