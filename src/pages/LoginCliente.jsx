@@ -69,12 +69,7 @@ export default function LoginCliente({ onClienteLogin }) {
               <button className="login-btn" type="submit" disabled={loading}>
                 {loading ? 'Verificando...' : 'Continuar'}
               </button>
-              <div className="login-switch">
-                ¿No tenés cuenta?{' '}
-                <button type="button" onClick={() => navigate('/cotizar')}>
-                  Registrate
-                </button>
-              </div>
+              
             </form>
           )}
 
