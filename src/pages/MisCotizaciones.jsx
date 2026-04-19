@@ -26,7 +26,7 @@ export default function MisCotizaciones({ clienteSession }) {
   const [cotizaciones, setCotizaciones] = useState([])
   const [loading, setLoading] = useState(true)
   const [detalle, setDetalle] = useState(null)
-  const [confirmando, setConfirmando] = useState(null)
+  // const [confirmando, setConfirmando] = useState(null) // deshabilitado: aceptar/rechazar se hace desde el email (N8N)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -41,13 +41,14 @@ export default function MisCotizaciones({ clienteSession }) {
       .then(({ data }) => { setCotizaciones(data || []); setLoading(false) })
   }, [clienteSession])
 
-  async function cambiarEstado(id, nuevoEstado) {
-    await supabase.from('cotizaciones').update({ estado: nuevoEstado }).eq('id', id)
-    setCotizaciones((prev) =>
-      prev.map((c) => c.id === id ? { ...c, estado: nuevoEstado } : c)
-    )
-    if (detalle?.id === id) setDetalle((prev) => ({ ...prev, estado: nuevoEstado }))
-  }
+  // cambiarEstado deshabilitado: el cliente acepta/rechaza desde el email (flujos N8N cliente-acepta / cliente-cancela)
+  // async function cambiarEstado(id, nuevoEstado) {
+  //   await supabase.from('cotizaciones').update({ estado: nuevoEstado }).eq('id', id)
+  //   setCotizaciones((prev) =>
+  //     prev.map((c) => c.id === id ? { ...c, estado: nuevoEstado } : c)
+  //   )
+  //   if (detalle?.id === id) setDetalle((prev) => ({ ...prev, estado: nuevoEstado }))
+  // }
 
   const paginated = paginate(cotizaciones, page, pageSize)
 
@@ -67,12 +68,13 @@ export default function MisCotizaciones({ clienteSession }) {
     },
     { key: 'acciones', label: '', render: (r) => (
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {/* Botones aceptar/rechazar deshabilitados — el cliente gestiona desde el email (N8N)
         {r.estado === 'emitida' && (
           <>
             <button className="btn-icon" title="Aceptar" style={{ color: '#2da66b' }} onClick={() => setConfirmando({ cotizacion: r, accion: 'aprobada' })}>✓</button>
             <button className="btn-icon" title="Rechazar" style={{ color: '#E74C3C' }} onClick={() => setConfirmando({ cotizacion: r, accion: 'rechazada' })}>✕</button>
           </>
-        )}
+        )} */}
         <button className="btn-icon" title="Ver" onClick={() => setDetalle(r)}>👁</button>
         <button className="btn-icon" title="PDF" onClick={() => generateCotizacionPdf(r)}>⬇</button>
       </div>
@@ -95,39 +97,18 @@ export default function MisCotizaciones({ clienteSession }) {
         <DetalleModal
           cotizacion={detalle}
           onClose={() => setDetalle(null)}
-          onCambiarEstado={cambiarEstado}
+          // onCambiarEstado deshabilitado — se gestiona desde el email (N8N)
         />
       )}
 
+      {/* Modal confirmación deshabilitado — aceptar/rechazar se hace desde el email (N8N)
       {confirmando && (
         <div className="modal-backdrop" onClick={() => setConfirmando(null)}>
           <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <p className="confirm-modal-msg">
-              {confirmando.accion === 'aprobada'
-                ? <>¿Deseás <strong>aceptar</strong> esta cotización?</>
-                : <>¿Deseás <strong>rechazar</strong> esta cotización?</>
-              }
-            </p>
-            <div style={{ background: '#f4f7fb', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: '0.88rem', color: '#1d315d', lineHeight: 1.8 }}>
-              <div><span style={{ color: '#6b7c98' }}>ID:</span> <strong>{shortId(confirmando.cotizacion.id)}</strong></div>
-              <div><span style={{ color: '#6b7c98' }}>Total:</span> <strong>{formatearMoneda(confirmando.cotizacion.total)}</strong></div>
-              <div><span style={{ color: '#6b7c98' }}>Fecha:</span> {formatearFecha(confirmando.cotizacion.fecha_creacion)}</div>
-            </div>
-            <div className="confirm-modal-actions">
-              <button className="confirm-modal-cancel" onClick={() => setConfirmando(null)}>
-                Cancelar
-              </button>
-              <button
-                className="confirm-modal-ok"
-                style={{ background: confirmando.accion === 'aprobada' ? '#2da66b' : '#E74C3C' }}
-                onClick={() => { cambiarEstado(confirmando.cotizacion.id, confirmando.accion); setConfirmando(null) }}
-              >
-                {confirmando.accion === 'aprobada' ? '✓ Sí, aceptar' : '✕ Sí, rechazar'}
-              </button>
-            </div>
+            ...
           </div>
         </div>
-      )}
+      )} */}
     </main>
   )
 }
