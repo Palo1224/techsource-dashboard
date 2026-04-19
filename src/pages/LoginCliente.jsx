@@ -24,7 +24,7 @@ export default function LoginCliente({ onClienteLogin }) {
     setLoading(false)
 
     if (queryError || !data) {
-      setError('No encontramos una cuenta con ese correo.')
+      setPaso('no-encontrado')
       return
     }
     if (data.permitido === false) {
@@ -76,6 +76,32 @@ export default function LoginCliente({ onClienteLogin }) {
                 </button>
               </div>
             </form>
+          )}
+
+          {paso === 'no-encontrado' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'center' }}>
+              <div style={{
+                background: '#fff8ec', border: '1px solid #f5d78e',
+                borderRadius: 12, padding: '20px 18px',
+              }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, color: '#1d315d', fontSize: '0.95rem' }}>
+                  Sin registros encontrados
+                </p>
+                <p style={{ margin: 0, fontSize: '0.83rem', color: '#7a6030' }}>
+                  Aún no tenés compras o cotizaciones registradas con nosotros.
+                </p>
+              </div>
+              <Link to="/cotizar" className="login-btn" style={{ textDecoration: 'none', textAlign: 'center' }}>
+                Solicitar una cotización
+              </Link>
+              <button
+                type="button"
+                onClick={() => { setPaso('email'); setError('') }}
+                style={{ background: 'none', border: 'none', color: '#9aaabf', cursor: 'pointer', fontSize: '0.82rem' }}
+              >
+                ← Intentar con otro correo
+              </button>
+            </div>
           )}
 
           {paso === 'confirmar' && cliente && (
