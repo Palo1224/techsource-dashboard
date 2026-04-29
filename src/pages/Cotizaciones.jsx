@@ -25,7 +25,7 @@ export function parseProductos(raw) {
 const ESTADOS = [
   { value: 'en_espera', label: 'En espera', badge: 'badge-yellow' },
   { value: 'emitida',   label: 'Emitida',   badge: 'badge-blue'   },
-  { value: 'aprobada',  label: 'Aprobada',  badge: 'badge-green'  },
+  { value: 'Aceptada',  label: 'Aceptada',  badge: 'badge-green'  },
   { value: 'vencida',   label: 'Vencida',   badge: 'badge-red'    },
 ]
 
