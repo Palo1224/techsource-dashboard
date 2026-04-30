@@ -20,6 +20,7 @@ import Cotizar from './pages/Cotizar'
 import Clientes from './pages/Clientes'
 import Proveedores from './pages/Proveedores'
 import Destacados from './pages/Destacados'
+import Porcentajes from './pages/Porcentajes'
 
 // ─── Layouts ────────────────────────────────────────────────────────────────
 
@@ -228,6 +229,7 @@ export default function App() {
         <Route path="/clientes" element={<Clientes />} />
         <Route path="/proveedores" element={<Proveedores />} />
         <Route path="/destacados" element={<Destacados />} />
+        <Route path="/porcentajes" element={<Porcentajes />} />
       </Route>
 
       {/* Fallback */}

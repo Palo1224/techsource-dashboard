@@ -10,6 +10,7 @@ const links = [
   { to: '/cotizaciones',   label: 'Cotizaciones' },
   { to: '/clientes',       label: 'Clientes' },
   { to: '/destacados',    label: 'Destacados' },
+  { to: '/porcentajes',   label: 'Porcentajes' },
 ]
 
 export default function AdminNavbar() {

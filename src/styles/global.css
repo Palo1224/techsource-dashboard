@@ -4107,3 +4107,414 @@ h2 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ═══════════════════════════════════════════
+   PÁGINA PORCENTAJES (ADMIN)
+═══════════════════════════════════════════ */
+
+/* Category grid */
+.pct-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 0;
+}
+
+.pct-cat-card {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(223,231,243,0.96);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-soft);
+}
+
+.pct-cat-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pct-cat-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eef5ff, #f8fbff);
+  border: 1px solid #e4edf9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.pct-cat-nombre {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #172b57;
+}
+
+.pct-cat-count {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #8a9bb8;
+  font-weight: 500;
+}
+
+.pct-cat-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #edf2fa;
+}
+
+.pct-cat-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #5b6f93;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pct-cat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pct-input {
+  width: 72px;
+  padding: 7px 9px;
+  border: 1.5px solid #d5e2f4;
+  border-radius: 9px;
+  background: #fff;
+  color: #172b57;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pct-input:focus {
+  border-color: #2f6fed;
+  box-shadow: 0 0 0 3px rgba(47,111,237,0.1);
+}
+
+.pct-sign {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #5b6f93;
+}
+
+.pct-aplicar-btn {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #1f5aa7, #2f6fed);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.pct-aplicar-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.pct-aplicar-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Toolbar */
+.pct-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.pct-search {
+  flex: 1;
+  min-width: 220px;
+  width: auto !important;
+}
+
+.pct-select {
+  width: auto !important;
+  min-width: 180px;
+}
+
+/* Summary */
+.pct-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pct-summary-card {
+  background: linear-gradient(135deg, #fff, #f5f9ff);
+  border: 1px solid #dfe7f3;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.pct-summary-label {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #8a9bb8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pct-summary-value {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #172b57;
+}
+
+.pct-summary-verde {
+  color: #16a34a;
+}
+
+/* Table */
+.pct-table-wrap {
+  border: 1px solid #e8edf4;
+  border-radius: 12px;
+  overflow: auto;
+}
+
+.pct-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.pct-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6a7d9c;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 11px 14px;
+  background: #f7faff;
+  border-bottom: 1px solid #e8edf4;
+  white-space: nowrap;
+}
+
+.pct-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #edf2fa;
+  font-size: 0.88rem;
+  font-weight: 600;
+  vertical-align: middle;
+  color: #172b57;
+}
+
+.pct-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pct-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.pct-row-dirty {
+  background: #fffbeb !important;
+}
+
+.pct-sku {
+  color: #8a9bb8 !important;
+  font-size: 0.78rem !important;
+}
+
+.pct-money {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pct-venta {
+  color: #16a34a;
+  font-weight: 700 !important;
+}
+
+.pct-utilidad {
+  color: #2f6fed;
+  font-weight: 700 !important;
+}
+
+.pct-prod-input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pct-input-sm {
+  width: 58px;
+  padding: 5px 7px;
+  font-size: 0.82rem;
+}
+
+.pct-guardar-btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #2f6fed;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pct-guardar-btn:hover:not(:disabled) {
+  background: #2460d8;
+}
+
+.pct-guardar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pct-saving-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 2px solid #dfe7f3;
+  border-top-color: #2f6fed;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+.pct-empty {
+  text-align: center;
+  padding: 28px;
+  color: #8a9bb8;
+  font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+  .pct-cat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pct-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .pct-cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Porcentajes — historial button ─────────────────────────────── */
+.btn-historial-pct {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #2f6fed;
+  background: transparent;
+  color: #2f6fed;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-historial-pct:hover {
+  background: #2f6fed;
+  color: #fff;
+}
+
+/* ── Porcentajes — historial modal table ─────────────────────────── */
+.pct-hist-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #dfe7f3;
+}
+
+.pct-hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.pct-hist-table thead tr {
+  background: #f0f5ff;
+}
+
+.pct-hist-table th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: #4a5e80;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1.5px solid #dfe7f3;
+}
+
+.pct-hist-table tbody tr {
+  border-bottom: 1px solid #edf2f9;
+  transition: background 0.1s;
+}
+
+.pct-hist-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.pct-hist-table tbody tr:hover {
+  background: #f7faff;
+}
+
+.pct-hist-table td {
+  padding: 9px 12px;
+  color: #23375c;
+  vertical-align: middle;
+}
+
+.pct-hist-fecha {
+  color: #6b7c98;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.pct-hist-ref {
+  font-weight: 600;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pct-hist-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #4a5e80;
+  font-weight: 600;
+}
+
+.pct-hist-nuevo {
+  color: #16a34a;
+}
