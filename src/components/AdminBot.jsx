@@ -1,5 +1,37 @@
 import { useState, useRef, useEffect } from 'react'
 
+function parseLine(linea) {
+  return linea.split(/(\*\*[^*]+\*\*)/).map((p, j) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={j}>{p.slice(2, -2)}</strong>
+      : p
+  )
+}
+
+function renderMarkdown(texto) {
+  const lineas = texto.split('\n')
+  const result = []
+  let i = 0
+  while (i < lineas.length) {
+    if (lineas[i].match(/^[-*]\s+/)) {
+      const items = []
+      while (i < lineas.length && lineas[i].match(/^[-*]\s+/)) {
+        const contenido = lineas[i].replace(/^[-*]\s+/, '')
+        items.push(<li key={i}>{parseLine(contenido)}</li>)
+        i++
+      }
+      result.push(<ul key={`ul-${i}`} style={{ margin: '4px 0', paddingLeft: '18px' }}>{items}</ul>)
+    } else if (lineas[i].trim() === '') {
+      result.push(<br key={i} />)
+      i++
+    } else {
+      result.push(<span key={i} style={{ display: 'block' }}>{parseLine(lineas[i])}</span>)
+      i++
+    }
+  }
+  return result
+}
+
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_ADMINBOT
 
 const SUGGS = [
@@ -179,7 +211,7 @@ export default function AdminBot() {
         <div className="adminbot-msgs" ref={msgsRef}>
           {mensajes.map((m, i) => (
             <div key={i} className={`adminbot-msg ${m.tipo}`}>
-              <div className="adminbot-msg-bubble">{m.texto}</div>
+              <div className="adminbot-msg-bubble">{m.tipo === 'bot' ? renderMarkdown(m.texto) : m.texto}</div>
               <div className="adminbot-msg-time">{m.hora}</div>
             </div>
           ))}
