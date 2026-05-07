@@ -45,7 +45,6 @@ export default function Cotizaciones() {
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('')
-  const [validacion, setValidacion] = useState('')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
   const [detalle, setDetalle] = useState(null)
@@ -85,14 +84,11 @@ export default function Cotizaciones() {
       const fecha = item.fecha_creacion ? new Date(item.fecha_creacion) : null
       const cumpleTexto = !busqueda || id.includes(busqueda.toLowerCase()) || cliente.includes(busqueda.toLowerCase()) || email.includes(busqueda.toLowerCase())
       const cumpleEstado = !filtroEstado || item.estado === filtroEstado
-      let cumpleValidacion = true
-      if (validacion === 'vigentes') cumpleValidacion = item.precios_vigentes === true
-      else if (validacion === 'verificacion') cumpleValidacion = item.precios_vigentes === false
       const cumpleDesde = !desde || !fecha || fecha >= new Date(`${desde}T00:00:00`)
       const cumpleHasta = !hasta || !fecha || fecha <= new Date(`${hasta}T23:59:59`)
-      return cumpleTexto && cumpleEstado && cumpleValidacion && cumpleDesde && cumpleHasta
+      return cumpleTexto && cumpleEstado && cumpleDesde && cumpleHasta
     })
-  }, [cotizaciones, busqueda, filtroEstado, validacion, desde, hasta])
+  }, [cotizaciones, busqueda, filtroEstado, desde, hasta])
 
   const paginated = paginate(filtrado, page, pageSize)
 
@@ -172,7 +168,6 @@ export default function Cotizaciones() {
 
 function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
   const productos = parseProductos(cotizacion.productos)
-  const hayAntiguos = productos.some((p) => p.precio_vigente === false)
 
   return (
     <Modal title="Detalle de cotización" onClose={onClose} maxWidth={860}>
@@ -205,28 +200,18 @@ function DetalleModal({ cotizacion, onClose, onCambiarEstado }) {
             {productos.length === 0 && (
               <tr><td colSpan={5} style={{ color: '#9aaabf', padding: '16px', textAlign: 'center' }}>Sin productos registrados</td></tr>
             )}
-            {productos.map((p, i) => {
-              const stale = p.precio_vigente === false
-              return (
-                <tr key={i}>
-                  <td>{p.nombre}</td>
-                  <td>{p.proveedor || ''}</td>
-                  <td style={{ color: stale ? '#E67E22' : undefined, fontWeight: stale ? 700 : undefined }}>
-                    {stale ? '⚠ ' : ''}${Number(p.precio_unitario || 0).toFixed(0)}
-                  </td>
-                  <td>{p.cantidad || 1}</td>
-                  <td>${Number(p.subtotal || 0).toFixed(0)}</td>
-                </tr>
-              )
-            })}
+            {productos.map((p, i) => (
+              <tr key={i}>
+                <td>{p.nombre}</td>
+                <td>{p.proveedor || ''}</td>
+                <td>${Number(p.precio_unitario || 0).toFixed(0)}</td>
+                <td>{p.cantidad || 1}</td>
+                <td>${Number(p.subtotal || 0).toFixed(0)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-      {hayAntiguos && (
-        <p style={{ color: '#E67E22', fontSize: '0.9rem', marginTop: 12 }}>
-          ⚠ Los productos marcados tenían precios con más de 48 horas al momento de emisión.
-        </p>
-      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
         <button className="btn-topbar" onClick={() => generateCotizacionPdf(cotizacion, { isAdmin: true })}>⬇ PDF</button>
       </div>

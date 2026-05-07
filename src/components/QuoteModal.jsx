@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabase'
-import { esPrecioVigente } from '../utils/helpers'
 import { generateCotizacionPdf } from '../utils/generatePdf'
 
 export default function QuoteModal({ onClose, onSaved }) {
@@ -49,8 +48,6 @@ export default function QuoteModal({ onClose, onSaved }) {
         moneda: producto.moneda || 'USD',
         cantidad: 1,
         subtotal: Number(producto.precio_venta),
-        precio_vigente: esPrecioVigente(producto.fecha_sync),
-        fecha_sync: producto.fecha_sync,
       }]
     })
     setSelectValue('')
@@ -68,7 +65,6 @@ export default function QuoteModal({ onClose, onSaved }) {
   }
 
   const total = carrito.reduce((acc, p) => acc + p.subtotal, 0)
-  const hayDesactualizados = carrito.some((p) => !p.precio_vigente)
 
   async function guardar() {
     if (!clienteNombre.trim() || !clienteEmail.trim()) {
@@ -85,13 +81,12 @@ export default function QuoteModal({ onClose, onSaved }) {
       .insert([{
         nombre_cliente: clienteNombre,
         email_cliente: clienteEmail,
-        productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente }) =>
-          ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente })
+        productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda }) =>
+          ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda })
         ),
         total,
         fecha_creacion: new Date().toISOString(),
         estado: 'emitida',
-        precios_vigentes: carrito.every((p) => p.precio_vigente),
       }])
       .select()
       .single()
@@ -112,11 +107,6 @@ export default function QuoteModal({ onClose, onSaved }) {
           <p style={{ color: '#9aaabf', fontSize: '0.82rem', marginBottom: 20 }}>
             ID {String(guardada.id).substring(0, 8)}
           </p>
-          {!guardada.precios_vigentes && (
-            <div className="qm-alert" style={{ marginBottom: 16 }}>
-              ⚠️ Algunos precios tienen más de 48 horas. Verificar con proveedor.
-            </div>
-          )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
             <button className="btn-topbar" onClick={() => generateCotizacionPdf(guardada, { isAdmin: true })}>⬇ PDF</button>
             <button className="btn-primary" onClick={onClose}>Cerrar</button>
@@ -160,13 +150,6 @@ export default function QuoteModal({ onClose, onSaved }) {
           </select>
         </div>
 
-        {/* Alerta desactualizados */}
-        {hayDesactualizados && (
-          <div className="qm-alert">
-            ⚠️ Hay precios desactualizados en esta cotización. Revisá los ítems marcados antes de generar el documento.
-          </div>
-        )}
-
         {/* Tabla */}
         {carrito.length > 0 && (
           <div className="qm-table-wrap">
@@ -187,7 +170,6 @@ export default function QuoteModal({ onClose, onSaved }) {
                     <td>
                       <div className="qm-precio-cell">
                         <strong>${p.precio_unitario.toFixed(0)}</strong>
-                        {!p.precio_vigente && <span className="qm-badge-stale">Desactualizado</span>}
                       </div>
                     </td>
                     <td>

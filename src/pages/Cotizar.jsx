@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
-import { esPrecioVigente } from '../utils/helpers'
 import { generateCotizacionPdf } from '../utils/generatePdf'
 
 export default function Cotizar({ clienteSession }) {
@@ -56,7 +55,6 @@ export default function Cotizar({ clienteSession }) {
         moneda: producto.moneda || 'USD',
         cantidad: 1,
         subtotal: Number(producto.precio_venta),
-        precio_vigente: esPrecioVigente(producto.fecha_sync),
       }]
     })
   }
@@ -76,7 +74,6 @@ export default function Cotizar({ clienteSession }) {
   const totalUnidades  = carrito.reduce((acc, p) => acc + p.cantidad, 0)
   const total          = carrito.reduce((acc, p) => acc + p.subtotal, 0)
   const moneda         = carrito[0]?.moneda || 'USD'
-  const productosAntiguos = carrito.filter((p) => !p.precio_vigente)
 
   const nombreCliente = clienteSession ? clienteData?.nombre_completo || clienteSession.email : form.nombre
   const emailCliente  = clienteSession ? clienteData?.email || clienteSession.email : form.email
@@ -90,13 +87,12 @@ export default function Cotizar({ clienteSession }) {
       nombre_cliente: nombreCliente,
       email_cliente: emailCliente,
       telefono: form.telefono || null,
-      productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente }) =>
-        ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda, precio_vigente })
+      productos: carrito.map(({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda }) =>
+        ({ nombre, cantidad, subtotal, categoria, proveedor, producto_id, precio_unitario, moneda })
       ),
       total,
       fecha_creacion: new Date().toISOString(),
       estado: 'emitida',
-      precios_vigentes: carrito.every((p) => p.precio_vigente),
     }
 
     try {
@@ -125,11 +121,10 @@ export default function Cotizar({ clienteSession }) {
       setGuardada({
         nombre_cliente: nombreCliente,
         email_cliente: emailCliente,
-        precios_vigentes: payload.precios_vigentes,
         productos: payload.productos,
         total,
         fecha_creacion: payload.fecha_creacion,
-        id: crypto.randomUUID(), // placeholder para mostrar ID corto
+        id: crypto.randomUUID(),
       })
     } catch {
       alert('Error al enviar la cotización. Intentá de nuevo.')
@@ -152,11 +147,6 @@ export default function Cotizar({ clienteSession }) {
             ID {String(guardada.id).substring(0, 8)} · Te enviamos un correo con el resumen de tu cotización.
           </p>
 
-          {!guardada.precios_vigentes && (
-            <div className="warning-card" style={{ marginBottom: 20, textAlign: 'center' }}>
-              ⚠ Algunos precios pueden haber cambiado, te lo confirmamos al contactarte.
-            </div>
-          )}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
             <button className="btn-topbar" onClick={() => generateCotizacionPdf(guardada)}>⬇ Descargar PDF</button>
             <button className="btn-primary" onClick={() => { setGuardada(null); setCarrito([]) }}>↻ Nueva cotización</button>
@@ -277,13 +267,10 @@ export default function Cotizar({ clienteSession }) {
               <h2 className="cotizar-card-title" style={{ marginBottom: 16 }}>Productos seleccionados ({carrito.length})</h2>
               <ul className="cotizar-cart-list">
                 {carrito.map((p, i) => (
-                  <li key={i} className={`cotizar-cart-item2${!p.precio_vigente ? ' stale' : ''}`}>
+                  <li key={i} className="cotizar-cart-item2">
                     <div className="cotizar-cart2-info">
                       <span className="cotizar-cart2-name">{p.nombre}</span>
                       <span className="cotizar-cart2-cat">{p.categoria}</span>
-                      {!p.precio_vigente && (
-                        <span className="cotizar-cart2-stale">⚠ Producto sin actualizar hace +48 hs.</span>
-                      )}
                     </div>
                     <div className="cotizar-cart2-controls">
                       <div className="product-inline-qty">
@@ -328,20 +315,6 @@ export default function Cotizar({ clienteSession }) {
               <span>{moneda} {Math.round(total).toLocaleString('es-AR')} <sup style={{ fontSize: '0.7em', color: '#9aaabf' }}>*</sup></span>
             </div>
             <p style={{ fontSize: '0.72rem', color: '#9aaabf', margin: '4px 0 0', textAlign: 'right' }}>* Precios pueden variar</p>
-
-            {productosAntiguos.length > 0 && (
-              <div className="cotizar-warning-block">
-                <div className="cotizar-warning-icon">⚠</div>
-                <div>
-                  <div className="cotizar-warning-title">Precios desactualizados</div>
-                  <div className="cotizar-warning-desc">
-                    {productosAntiguos.length === 1
-                      ? '1 producto tiene precio con más de 48 hs.'
-                      : `${productosAntiguos.length} productos sin actualizar hace +48 hs.`}
-                  </div>
-                </div>
-              </div>
-            )}
 
             <button className="cotizar-submit-btn" onClick={guardar} disabled={guardando || !carrito.length}>
               {guardando ? 'Enviando...' : 'Solicitar Cotización'}

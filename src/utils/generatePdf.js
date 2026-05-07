@@ -13,16 +13,11 @@ export function generateCotizacionPdf(cotizacion, { isAdmin = false } = {}) {
   const muted     = [107, 124, 152]
   const textColor = [35,  57,  93]
   const border    = [220, 228, 240]
-  const warnBg    = [255, 247, 232]
-  const warnBord  = [242, 192, 120]
-  const warnText  = [170,  95,  10]
-  const warnTitle = [211,  84,   0]
 
   // ── parse productos ─────────────────────────────────────
   let productos = cotizacion.productos
   if (typeof productos === 'string') { try { productos = JSON.parse(productos) } catch { productos = [] } }
   if (!Array.isArray(productos)) productos = (typeof productos === 'object' && productos) ? Object.values(productos) : []
-  const noVigentes = productos.filter(p => p.precio_vigente === false)
 
   // ── provider badge colors ────────────────────────────────
   const provColors = {}
@@ -212,10 +207,6 @@ export function generateCotizacionPdf(cotizacion, { isAdmin = false } = {}) {
       if (data.section === 'body') {
         const prod = productos[data.row.index]
         if (data.column.index === provColIdx) data.cell.styles.textColor = [255, 255, 255]
-        if (prod?.precio_vigente === false && (data.column.index === priceColIdx || data.column.index === totalColIdx)) {
-          data.cell.styles.textColor = warnTitle
-          data.cell.styles.fontStyle = 'bold'
-        }
         const colW = colStyles[data.column.index]?.cellWidth
         if (colW) {
           const availWidth = colW - 8
@@ -262,46 +253,6 @@ export function generateCotizacionPdf(cotizacion, { isAdmin = false } = {}) {
   })
 
   y = doc.lastAutoTable.finalY + 10
-
-  // ── AVISO PRECIOS DESACTUALIZADOS ────────────────────────
-  if (noVigentes.length) {
-    const nombres = noVigentes.map(p => p.nombre).join(' · ')
-    const bodyLines = doc.splitTextToSize(nombres, contentWidth - 24)
-    const boxH = 8 + 5 + bodyLines.length * 5 + 4
-
-    doc.setFillColor(...warnBg)
-    doc.setDrawColor(...warnBord)
-    doc.setLineWidth(0.4)
-    doc.roundedRect(margin, y, contentWidth, boxH, 3, 3, 'FD')
-
-    doc.setFillColor(...warnTitle)
-    doc.roundedRect(margin, y, 3.5, boxH, 1.5, 1.5, 'F')
-
-    // Triangle icon
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...warnTitle)
-    doc.text('!', margin + 9, y + 9)
-    // Circle around it
-    doc.setDrawColor(...warnTitle)
-    doc.setLineWidth(0.7)
-    doc.circle(margin + 9, y + 7, 4, 'S')
-
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...warnTitle)
-    doc.text('PRECIOS DESACTUALIZADOS', margin + 17, y + 8)
-
-    doc.setFontSize(8.5)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...warnText)
-    doc.text('Verificar precio con el proveedor antes de confirmar:', margin + 7, y + 14)
-
-    doc.setFont('helvetica', 'bold')
-    doc.text(bodyLines, margin + 7, y + 19)
-
-    y += boxH + 10
-  }
 
   // ── FOOTER ───────────────────────────────────────────────
   const footY = pageHeight - 18
